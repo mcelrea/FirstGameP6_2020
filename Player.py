@@ -57,5 +57,21 @@ class Player:
     def moveDown(self):
         self.y += self.speed
 
+        #collide with screen
+        #if self.y > 599 - self.size:
+        #    self.y = 599 - self.size
+
+        #wrap around screen
+        if self.y > 599 - self.size:
+            self.y = 0
+
     def moveUp(self):
         self.y -= self.speed
+
+        #collide with screen
+        #if self.y < 0:
+        #    self.y = 0
+
+        #wrap around screen
+        if self.y < 0:
+            self.y = 599 - self.size
