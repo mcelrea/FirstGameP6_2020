@@ -8,6 +8,7 @@ class Enemy:
     size = 10
     xvel = 0
     yvel = 0
+    debug = True #if debug is True, show collision boxes
 
     #how to create an new Enemy
     def __init__(self, color):
@@ -42,5 +43,19 @@ class Enemy:
         self.x += self.xvel
         self.y += self.yvel
 
+        if self.x < 0: #off left side of screen
+            self.x = 799 - self.size
+        if self.y < 0: #off top of screen
+            self.y = 599 - self.size
+        if self.x > 799 - self.size: #right side of screen
+            self.x = 0
+        if self.y > 599 - self.size: #off bottom of screen
+            self.y = 0
+
+    def getCollisionRectangle(self):
+        return pygame.Rect(self.x, self.y, self.size, self.size)
+
     def draw(self, screen):
         pygame.draw.rect(screen,self.color,(self.x, self.y, self.size, self.size))
+        if self.debug == True:
+            pygame.draw.rect(screen,(252,15,192), (self.x,self.y,self.size,self.size), 1)

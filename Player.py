@@ -22,6 +22,7 @@ class Player:
     # global variables
     size = 10
     speed = 3
+    debug = True #if debug is True, show collision rectangle
 
     # special method: defines how to make new Players
     def __init__(self, x, y, color):
@@ -31,6 +32,12 @@ class Player:
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
+        if self.debug == True:
+            pygame.draw.rect(screen, (252,15,192), (self.x, self.y, self.size, self.size), 1)
+
+    def checkCollisionWithRect(self, otherRect):
+        myRect = pygame.Rect(self.x,self.y,self.size,self.size)
+        return myRect.colliderect(otherRect)
 
     def moveRight(self):
         self.x += self.speed

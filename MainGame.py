@@ -12,6 +12,9 @@ FPS = 60 #60 Frames Per Second
 fpsClock = pygame.time.Clock()
 p1 = Player(100, 100, (255,0,0))
 enemies = [] #a list of enemies
+timeFont = pygame.font.SysFont("Arial", 30)
+timeStarted = 0
+addEnemiesSwitch = False
 
 
 #set the game screen size to be 800x600 pixels
@@ -35,8 +38,11 @@ def drawEnemies():
 
 def updateEnemies():
     global enemies
+    global p1
     for e in enemies:
         e.act()
+        if p1.checkCollisionWithRect(e.getCollisionRectangle()):
+            pygame.quit()
 
 def checkForPlayerInput():
     global p1
@@ -50,8 +56,32 @@ def checkForPlayerInput():
     if pressed[pygame.K_s]:
         p1.moveDown()
 
+def drawUI():
+    global timeFont
+    global screen
+    global timeStarted
+    textSurface = timeFont.render("Time: " + str((pygame.time.get_ticks()-timeStarted)/1000), True, (255,255,255))
+    screen.blit(textSurface, (390, 10))
+
+def addEnemies(num):
+    global enemies
+    for n in range(0,num,1):#loop num times
+        enemies.append(Enemy((0,255,0)))
+
+def spawnNewEnemies():
+    #if current time is evenly division by 5 (every 5 seconds)
+    global timeStarted
+    global addEnemiesSwitch
+    if ((pygame.time.get_ticks()-timeStarted)/1000) % 5 == 0:
+        #if I should add enemies (look at the switch)
+        if addEnemiesSwitch == True:
+            addEnemiesSwitch = False
+            addEnemies(5) #need to add some enemies
+    else: #the time is not evenly divisible by 5
+        addEnemiesSwitch = True
 
 initEnemies()
+timeStarted = pygame.time.get_ticks() #time stamping the start of the game
 while not gameOver:
     # loop through and empty the event queue, key presses, button clicks, etc.
     for event in pygame.event.get():
@@ -68,12 +98,14 @@ while not gameOver:
 
     # update enemies
     updateEnemies()
+    spawnNewEnemies()
 
     # check for collisions
 
     # draw everything
     p1.draw(screen)
     drawEnemies()
+    drawUI();
 
     # puts all the graphics onto the screen, should be last
     # line of game code
