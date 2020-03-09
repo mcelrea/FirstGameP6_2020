@@ -3,6 +3,7 @@ from Player import *
 from Enemy import *
 
 pygame.init() #start the pygame engine
+pygame.mixer.init() #start the game sound engine
 
 #game variables
 gameOver = False
@@ -15,7 +16,11 @@ enemies = [] #a list of enemies
 timeFont = pygame.font.SysFont("Arial", 30)
 timeStarted = 0
 addEnemiesSwitch = False
-
+gameState = "start screen"
+startScreenGraphic = pygame.image.load("/Users/mcelrea/PycharmProjects/FirstGameP6/download.jpeg")
+music = pygame.mixer.Sound("/Users/mcelrea/PycharmProjects/FirstGameP6/159.wav")
+explosionSound = pygame.mixer.Sound("/Users/mcelrea/PycharmProjects/FirstGameP6/explosion.wav")
+otherMusic = pygame.mixer.Sound("/Users/mcelrea/PycharmProjects/FirstGameP6/admiralbob77_-_Laying_Low_6.mp3")
 
 #set the game screen size to be 800x600 pixels
 screen = pygame.display.set_mode((800,600))
@@ -39,10 +44,15 @@ def drawEnemies():
 def updateEnemies():
     global enemies
     global p1
+    global gameState
+    global music
+    global explosionSound
     for e in enemies:
         e.act()
         if p1.checkCollisionWithRect(e.getCollisionRectangle()):
-            pygame.quit()
+            gameState = "game over"
+            pygame.mixer.Sound.play(explosionSound)
+            pygame.mixer.Sound.stop(music)
 
 def checkForPlayerInput():
     global p1
@@ -80,8 +90,18 @@ def spawnNewEnemies():
     else: #the time is not evenly divisible by 5
         addEnemiesSwitch = True
 
-initEnemies()
-timeStarted = pygame.time.get_ticks() #time stamping the start of the game
+def drawStartScreen():
+    global screen
+    global startScreenGraphic
+    screen.blit(startScreenGraphic,(100,100))
+    textSurface = timeFont.render("Press Spacebar to Play", True, (255, 255, 255))
+    screen.blit(textSurface, (270, 290))
+
+def drawGameOverScreen():
+    global screen
+    textSurface = timeFont.render("Game Over", True, (255, 255, 255))
+    screen.blit(textSurface, (270, 290))
+
 while not gameOver:
     # loop through and empty the event queue, key presses, button clicks, etc.
     for event in pygame.event.get():
@@ -89,23 +109,43 @@ while not gameOver:
         # if the event is a click on the "X" close button
         if event.type == pygame.QUIT:
             gameOver = True
+        #check for single keypress of spacebar
+        if event.type == pygame.KEYDOWN:
+            if gameState == "start screen":
+                if event.key == pygame.K_SPACE:
+                    gameState = "playing"
+                    addEnemiesSwitch = False
+                    initEnemies()
+                    timeStarted = pygame.time.get_ticks()  # time stamping the start of the game
+                    pygame.mixer.Sound.play(otherMusic)
+            elif gameState == "game over":
+                if event.key == pygame.K_RETURN:
+                    gameState = "start screen"
+                    enemies = [] #erase the enemy list
+
+
 
     # clear the screen
     pygame.draw.rect(screen, (0,0,0), (0,0,800,600))
 
-    # update player(s)
-    checkForPlayerInput()
+    if gameState == "playing":
+        # update player(s)
+        checkForPlayerInput()
 
-    # update enemies
-    updateEnemies()
-    spawnNewEnemies()
+        # update enemies
+        updateEnemies()
+        spawnNewEnemies()
 
-    # check for collisions
+        # check for collisions
 
-    # draw everything
-    p1.draw(screen)
-    drawEnemies()
-    drawUI();
+        # draw everything
+        p1.draw(screen)
+        drawEnemies()
+        drawUI();
+    elif gameState == "start screen":
+        drawStartScreen()
+    elif gameState == "game over":
+        drawGameOverScreen()
 
     # puts all the graphics onto the screen, should be last
     # line of game code
